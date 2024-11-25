@@ -1,0 +1,49 @@
+// Prisma Schema File
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo para Cadastro de Usuários
+model CadastrarUsuarios {
+  id             String         @id @default(uuid())   
+  nome           String
+  email          String         @unique               // Garantindo e-mails únicos
+  senha          String
+  role           String         @default("cliente")   // Papel padrão do usuário
+  dataCriacao    DateTime       @default(now()) 
+  dataAlteracao  DateTime       @updatedAt
+  notas          Nota[]                              // Relacionamento com Notas
+  tokenRefresh   TokenRefresh?                       // Relacionamento com TokenRefresh
+
+  @@map("cadastro_usuarios")                         // Nome da tabela no banco
+}
+
+// Modelo para Notas
+model Nota {
+  id        Int             @id @default(autoincrement())   
+  titulo    String
+  texto     String
+  imagem    String?                                  
+  tags      String[]                               
+  criadoEm  DateTime        @default(now()) 
+  userId    String                                   
+  user      CadastrarUsuarios @relation(fields: [userId], references: [id])  
+
+  @@map("notas_usuarios")                            
+}
+
+// Modelo para Tokens de Refresh
+model TokenRefresh {
+  id        String          @id @default(uuid())
+  expireIn  Int        
+ user      CadastrarUsuarios @relation(fields: [userId], references: [id])                           
+  userId    String                @unique                   
+
+  @@map("token_refresh")                            
+}
